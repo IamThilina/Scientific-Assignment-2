@@ -61,6 +61,30 @@ int getMatElementAt(int row, int column, int *values, int * columnIndexes, int *
     }
 }
 
+void setMatElementAt(int row, int column, int *values, int * columnIndexes, int *rowPointers, int newValue){
+
+    int rowPointer = *(rowPointers+(row-1));
+    int offset = (rowPointer-1);
+    columnIndexes += offset;
+    int columnIndex = *columnIndexes;
+
+    if(columnIndex > column){
+        while (columnIndex > column){
+            columnIndex = *--columnIndexes;
+            offset--;
+        }
+        *(values+offset) = newValue;
+    } else if (columnIndex < column){
+        while (columnIndex < column){
+            columnIndex = *++columnIndexes;
+            offset++;
+        }
+        *(values+offset) = newValue;
+    } else{
+        *(values+offset) = newValue;
+    }
+}
+
 int main() {
 
     const int N = 5;
@@ -102,6 +126,10 @@ int main() {
     printf("\n");
 
     printf("Element at (4,2) is %d",getMatElementAt(4, 2, &values, &columnIndexes, &rowPointers));
+
+    setMatElementAt(4, 4, &values, &columnIndexes, &rowPointers, 2017);
+    printf("\n");
+    printf("Element at (4,4) is %d",getMatElementAt(4, 4, &values, &columnIndexes, &rowPointers));
 
     return 0;
 }
