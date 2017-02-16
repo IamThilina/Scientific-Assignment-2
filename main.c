@@ -41,6 +41,26 @@ void convertToCRS(int *mat, int *values, int *columnIndexes, int *rowPointers, i
     }
 }
 
+int getMatElementAt(int row, int column, int *values, int * columnIndexes, int *rowPointers){
+
+    int rowPointer = *(rowPointers+(row-1));
+    int offset = (rowPointer-1);
+    columnIndexes += offset;
+    int columnIndex = *columnIndexes;
+
+    if(columnIndex > column){
+        return 0;
+    } else if (columnIndex < column){
+        while (columnIndex < column){
+            columnIndex = *++columnIndexes;
+            offset++;
+        }
+        return  *(values+offset);
+    } else{
+        return *(values+offset);
+    }
+}
+
 int main() {
 
     const int N = 5;
@@ -79,6 +99,9 @@ int main() {
     print1DArray(&columnIndexes, NoOfNonZeroElements);
     printf("\nRow Pointers\n");
     print1DArray(&rowPointers, N);
+    printf("\n");
+
+    printf("Element at (4,2) is %d",getMatElementAt(4, 2, &values, &columnIndexes, &rowPointers));
 
     return 0;
 }
