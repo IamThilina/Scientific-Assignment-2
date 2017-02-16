@@ -1,0 +1,3 @@
+/home/thilina/CLionProjects/assignment_2/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/thilina/CLionProjects/assignment_2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/thilina/CLionProjects/assignment_2/cmake-build-debug/CMakeFiles/assignment_2.dir
