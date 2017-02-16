@@ -17,6 +17,30 @@ void print1DArray(int *array, int size){
     }
 }
 
+void convertToCRS(int *mat, int *values, int *columnIndexes, int *rowPointers, int size){
+
+    int count = 0;
+    int i,j;
+    int rowPointerFound = 0;
+
+    for (i = 0; i < size; ++i) {
+        for (j = 0; j < size; ++j) {
+            if(*((mat+i*size)+j) > 0){
+                *values++ = *((mat+i*size)+j);
+                *columnIndexes++ = j+1;
+                if(!rowPointerFound){
+                    *rowPointers++ = count+1;
+                    rowPointerFound = 1;
+                }
+                count++;
+            }
+        }
+        if(!rowPointerFound) // complete zero elements row
+            *rowPointers++ = -1;
+        rowPointerFound = 0;
+    }
+}
+
 int main() {
 
     const int N = 5;
@@ -45,28 +69,9 @@ int main() {
     int columnIndexes[NoOfNonZeroElements];
     int rowPointers[N];
 
-    int count = 0;
-    int i,j;
-    int rowPointerFound = 0;
-
     print2DArray(&mat, N);
 
-    for (i = 0; i < N; ++i) {
-        for (j = 0; j < N; ++j) {
-            if(mat[i][j] > 0){
-                values[count] = mat[i][j];
-                columnIndexes[count] = j+1;
-                if(!rowPointerFound){
-                    rowPointers[i] = count+1;
-                    rowPointerFound = 1;
-                }
-                count++;
-            }
-        }
-        if(!rowPointerFound) // complete zero elements row
-            rowPointers[i] = -1;
-        rowPointerFound = 0;
-    }
+    convertToCRS(&mat, &values, &columnIndexes, &rowPointers, N);
 
     printf("Values Array\n");
     print1DArray(&values, NoOfNonZeroElements);
