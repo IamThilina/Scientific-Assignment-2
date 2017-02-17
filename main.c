@@ -101,7 +101,7 @@ void convertToCCSFromCRS(int *values, int *columnIndexes, int *rowPointers, int 
     int scanningColumn,scanningRow;
     int ColumnPointerFound = 0;
     int offset;
-    int firstNonZeroColumn = 0;
+    int firstNonZeroColumnFound = 0;
     int OUT_OF_BOUNDS = 0;
 
     /*for (scanningColumn = 0; scanningColumn < size; ++scanningColumn) {
@@ -150,20 +150,20 @@ void convertToCCSFromCRS(int *values, int *columnIndexes, int *rowPointers, int 
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < size; ++j) {
             if(getMatElementAt(j+1, i+1, values, columnIndexes, rowPointers) > 0){
-                printf("\nFOUND %d\n at %d,%d", getMatElementAt(j+1, i+1, values, columnIndexes, rowPointers),j+1,i+1);
+                //printf("\nFOUND %d\n at %d,%d", getMatElementAt(j+1, i+1, values, columnIndexes, rowPointers),j+1,i+1);
                 count++;
                 *rowIndexes++ = j+1;
-                if(!firstNonZeroColumn){
+                if(!firstNonZeroColumnFound){
                     *columnPointers++ = count;
-                    firstNonZeroColumn = 1;
+                    firstNonZeroColumnFound = 1;
                 }
             }
         }
 
-        if(!firstNonZeroColumn)
-            *columnIndexes = -1;
+        if(!firstNonZeroColumnFound)
+            *columnPointers++ = -1;
         else
-            firstNonZeroColumn = 0;
+            firstNonZeroColumnFound = 0;
     }
 }
 
@@ -224,9 +224,9 @@ int main() {
     convertToCCSFromCRS(&values, &columnIndexes, &rowPointers, &rowIndexes, &columnPointers, N);
 
     printf("\n\nRow Indexes Array\n");
-    //print1DArray(&rowIndexes, NoOfNonZeroElements);
+    print1DArray(&rowIndexes, NoOfNonZeroElements);
     printf("\n\nColumn Pointers\n");
-    //print1DArray(&columnPointers, N);
+    print1DArray(&columnPointers, N);
 
     return 0;
 }
