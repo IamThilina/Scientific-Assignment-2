@@ -74,12 +74,18 @@ int getMatElementAt(int row, int column, int *values, int * columnIndexes, int *
 
 void setMatElementAt(int row, int column, int *values, int * columnIndexes, int *rowPointers, int newValue, int *NoOfNonZeroElements, int size){
 
+    int offset;
     int rowPointer = *(rowPointers+(row-1));
-    int offset = (rowPointer-1);
-    //columnIndexes += offset;
-    int columnIndex = *(columnIndexes+offset);
 
-    if(columnIndex > column){ // overriding a zero element
+    if(rowPointer == -1){ // adding to complete zero row
+
+        int increment = row;
+        while(rowPointer == -1){
+            rowPointer = *(rowPointers+ increment++);
+        }
+
+        offset = (rowPointer-1); // 1 to counter the way arrays are indexed, 1 to go back to previous row
+
         //updating values and columnIndexes
         for (int i = *NoOfNonZeroElements; i > offset; i--) {
             *(columnIndexes+i) = *(columnIndexes +i-1);
@@ -87,52 +93,77 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
         }
         *(columnIndexes+offset) = column;
         *(values+offset) = newValue;
-        *NoOfNonZeroElements++;
+        *NoOfNonZeroElements += 1;
 
         //updating the rowPointers
-        for (int j = row; j <= size; ++j) {
+        for (int j = row-1; j <= size; ++j) {
             if(*(rowPointers+j) != -1){
                 *(rowPointers+j) += 1;
-            }
-        }
-    } else if (columnIndex < column){
-        while (columnIndex < column){
-            columnIndex = *(columnIndexes+ ++offset);
-            if(offset == *(rowPointers+row)-1 || offset == *(rowPointers+row+1)-1 || columnIndex > column) {
-                // First 2 conditions : Offset is at next row.Element must be the last non zero element of the row. overriding a zero
-                // Last conditions : there are more elements in the required row. overriding a zero
-                for (int i = *NoOfNonZeroElements; i > offset; i--) {
-                    *(columnIndexes+i) = *(columnIndexes +i-1);
-                    *(values+i) = *(values+i-1);
-                }
-                *(columnIndexes+offset) = column;
-                *(values+offset) = newValue;
-                *NoOfNonZeroElements += 1;
-
-                //updating the rowPointers
-                for (int j = row; j <= size; ++j) {
-                    if(*(rowPointers+j) != -1){
-                        *(rowPointers+j) += 1;
-                    }
-                }
-                break;
-            } else if(columnIndex == column){ //overriding an existing element
-                *(columnIndexes+offset) = column;
-                *(values+offset) = newValue;
-
-                //updating the rowPointers
-                for (int j = row; j <= size; ++j) {
-                    if(*(rowPointers+j) != -1){
-                        *(rowPointers+j) += 1;
-                    }
-                }
-                break;
             } else{
-                continue;
+                *(rowPointers+j) = offset+1;
             }
         }
-    } else{
-        *(values+offset) = newValue;
+
+    } else{  // adding to non-complete zero row
+
+        offset = (rowPointer-1);
+        int columnIndex = *(columnIndexes+offset);
+
+        if(columnIndex > column){ // overriding a zero element
+            //updating values and columnIndexes
+            for (int i = *NoOfNonZeroElements; i > offset; i--) {
+                *(columnIndexes+i) = *(columnIndexes +i-1);
+                *(values+i) = *(values+i-1);
+            }
+            *(columnIndexes+offset) = column;
+            *(values+offset) = newValue;
+            *NoOfNonZeroElements++;
+
+            //updating the rowPointers
+            for (int j = row; j <= size; ++j) {
+                if(*(rowPointers+j) != -1){
+                    *(rowPointers+j) += 1;
+                }
+            }
+        } else if (columnIndex < column){
+            while (columnIndex < column){
+                columnIndex = *(columnIndexes+ ++offset);
+                if(offset == *(rowPointers+row)-1 || offset == *(rowPointers+row+1)-1 || columnIndex > column) {
+                    // First 2 conditions : Offset is at next row.Element must be the last non zero element of the row. overriding a zero
+                    // Last conditions : there are more elements in the required row. overriding a zero
+                    for (int i = *NoOfNonZeroElements; i > offset; i--) {
+                        *(columnIndexes+i) = *(columnIndexes +i-1);
+                        *(values+i) = *(values+i-1);
+                    }
+                    *(columnIndexes+offset) = column;
+                    *(values+offset) = newValue;
+                    *NoOfNonZeroElements += 1;
+
+                    //updating the rowPointers
+                    for (int j = row; j <= size; ++j) {
+                        if(*(rowPointers+j) != -1){
+                            *(rowPointers+j) += 1;
+                        }
+                    }
+                    break;
+                } else if(columnIndex == column){ //overriding an existing element
+                    *(columnIndexes+offset) = column;
+                    *(values+offset) = newValue;
+
+                    //updating the rowPointers
+                    for (int j = row; j <= size; ++j) {
+                        if(*(rowPointers+j) != -1){
+                            *(rowPointers+j) += 1;
+                        }
+                    }
+                    break;
+                } else{
+                    continue;
+                }
+            }
+        } else{
+            *(values+offset) = newValue;
+        }
     }
 }
 
@@ -224,15 +255,15 @@ int main() {
     /*
      * Value Array
      * 1 2 4 8 16 32 64
-     * 1 2017 2 4 8 16 32 64
+     * 1 2 4 2017 8 16 32 64
      *
      * Column Indexes
      * 1 4 4 2 5 2 5
-     * 1 3 4 4 2 5 2 5
+     * 1 4 4 3 2 5 2 5
      *
      * RowPointers
      * 1 3 -1 4 6 8
-     * 1 4 -1 5 7 9
+     * 1 3 4 5 7 9
      *
      * Row Indexes
      * 1 4 5 1 2 4 5
@@ -261,12 +292,12 @@ int main() {
     print1DArray(&rowPointers, N+1);
     printf("\n\n");
 
-    printf("Element at (1,3) is %d",getMatElementAt(1, 3, &values, &columnIndexes, &rowPointers));
+    printf("Element at (3,3) is %d",getMatElementAt(3, 3, &values, &columnIndexes, &rowPointers));
 
-    printf("\n\nSetting Element at (1,3) to 2017");
-    setMatElementAt(1, 3, &values, &columnIndexes, &rowPointers, 2017, &NoOfNonZeroElements, N);
+    printf("\n\nSetting Element at (3,3) to 2017");
+    setMatElementAt(3, 3, &values, &columnIndexes, &rowPointers, 2017, &NoOfNonZeroElements, N);
     printf("\n\n");
-    printf("Element at (1,3) is %d",getMatElementAt(1, 3, &values, &columnIndexes, &rowPointers));
+    printf("Element at (3,3) is %d",getMatElementAt(1, 3, &values, &columnIndexes, &rowPointers));
 
     printf("\n======================\n");
     printf("\nValues\n");
