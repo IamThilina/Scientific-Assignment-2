@@ -72,7 +72,7 @@ int getMatElementAt(int row, int column, int *values, int * columnIndexes, int *
     }
 }
 
-void setMatElementAt(int row, int column, int *values, int * columnIndexes, int *rowPointers, int newValue, int *NoOfNonZeroElements){
+void setMatElementAt(int row, int column, int *values, int * columnIndexes, int *rowPointers, int newValue, int *NoOfNonZeroElements, int size){
 
     int rowPointer = *(rowPointers+(row-1));
     int offset = (rowPointer-1);
@@ -80,6 +80,7 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
     int columnIndex = *(columnIndexes+offset);
 
     if(columnIndex > column){ // overriding a zero element
+        //updating values and columnIndexes
         for (int i = *NoOfNonZeroElements; i > offset; i--) {
             *(columnIndexes+i) = *(columnIndexes +i-1);
             *(values+i) = *(values+i-1);
@@ -87,6 +88,13 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
         *(columnIndexes+offset) = column;
         *(values+offset) = newValue;
         *NoOfNonZeroElements++;
+
+        //updating the rowPointers
+        for (int j = row; j <= size; ++j) {
+            if(*(rowPointers+j) != -1){
+                *(rowPointers+j) += 1;
+            }
+        }
     } else if (columnIndex < column){
         while (columnIndex < column){
             columnIndex = *(columnIndexes+ ++offset);
@@ -100,10 +108,24 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
                 *(columnIndexes+offset) = column;
                 *(values+offset) = newValue;
                 *NoOfNonZeroElements += 1;
+
+                //updating the rowPointers
+                for (int j = row; j <= size; ++j) {
+                    if(*(rowPointers+j) != -1){
+                        *(rowPointers+j) += 1;
+                    }
+                }
                 break;
             } else if(columnIndex == column){ //overriding an existing element
                 *(columnIndexes+offset) = column;
                 *(values+offset) = newValue;
+
+                //updating the rowPointers
+                for (int j = row; j <= size; ++j) {
+                    if(*(rowPointers+j) != -1){
+                        *(rowPointers+j) += 1;
+                    }
+                }
                 break;
             } else{
                 continue;
@@ -201,14 +223,16 @@ int main() {
 
     /*
      * Value Array
-     * 1 2 2017 4 8 16 32 64
+     * 1 2 4 8 16 32 64
+     * 1 2017 2 4 8 16 32 64
      *
      * Column Indexes
      * 1 4 4 2 5 2 5
-     * 1 4 5 4 2 5 2 5
+     * 1 3 4 4 2 5 2 5
      *
      * RowPointers
      * 1 3 -1 4 6 8
+     * 1 4 -1 5 7 9
      *
      * Row Indexes
      * 1 4 5 1 2 4 5
@@ -237,17 +261,21 @@ int main() {
     print1DArray(&rowPointers, N+1);
     printf("\n\n");
 
-    printf("Element at (1,5) is %d",getMatElementAt(1, 5, &values, &columnIndexes, &rowPointers));
+    printf("Element at (1,3) is %d",getMatElementAt(1, 3, &values, &columnIndexes, &rowPointers));
 
-    printf("\n\nSetting Element at (1,5) to 2017");
-    setMatElementAt(1, 5, &values, &columnIndexes, &rowPointers, 2017, &NoOfNonZeroElements);
+    printf("\n\nSetting Element at (1,3) to 2017");
+    setMatElementAt(1, 3, &values, &columnIndexes, &rowPointers, 2017, &NoOfNonZeroElements, N);
     printf("\n\n");
     printf("Element at (1,3) is %d",getMatElementAt(1, 3, &values, &columnIndexes, &rowPointers));
 
     printf("\n======================\n");
-    print1DArray(&columnIndexes, NoOfNonZeroElements);
-    printf("\n\n");
+    printf("\nValues\n");
     print1DArray(&values, NoOfNonZeroElements);
+    printf("\nColumn Indexes\n");
+    print1DArray(&columnIndexes, NoOfNonZeroElements);
+    printf("\nRow Pointers\n");
+    print1DArray(&rowPointers, N+1);
+
 
     printf("\n\nConverting To CCS Format");
     convertToCCSFromCRS(&values, &columnIndexes, &rowPointers, &rowIndexes, &columnPointers, N);
