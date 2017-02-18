@@ -169,10 +169,6 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
     }
 }
 
-void pointerTest(int *A){
-    *A = 1000;
-}
-
 void convertToCCSFromCRS(int *values, int *columnIndexes, int *rowPointers, int *rowIndexes, int *columnPointers, int size){
 
     int count = 0;
@@ -259,24 +255,6 @@ int main() {
             {0, 32, 0, 0, 64}
     };
 
-    /*int *A;
-
-    A = (int*) malloc(2*sizeof(int));
-
-    for (int k = 0; k < 2; ++k) {
-        *(A+k) = k;
-        printf("%d ",*(A+k));
-    }
-
-    A = realloc(A, 4);
-    printf("\n");
-    for (int k = 0; k < 4; ++k) {
-        printf("%d ",*(A+k));
-    }
-
-    pointerTest(A);
-    printf("\n%d",*A);*/
-
     /*
      * Value Array
      * 1 2 4 8 16 32 64
@@ -303,26 +281,25 @@ int main() {
      * 1 3  5 6 9 11
      *
      * Row Indexes
-     * 1 4 5 1 2 4 5
+     * 1 2 4 5 3 1 2 4 4 5
      *
      * Column Pointers
-     * 1 2 -1 4 6 8
+     * 1 2 5 6 9 11
      * */
 
-    int *values, *columnIndexes, *rowPointers;
-    int rowIndexes[NoOfNonZeroElements];
-    int columnPointers[N];
+    int *values, *columnIndexes, *rowPointers, *rowIndexes, *columnPointers;
 
     values = (int*) malloc(NoOfNonZeroElements*sizeof(int));
     columnIndexes = (int*) malloc(NoOfNonZeroElements*sizeof(int));
     rowPointers = (int*) malloc(N*sizeof(int));
+    rowIndexes = (int*) malloc(NoOfNonZeroElements*sizeof(int));
+    columnPointers = (int*) malloc(N* sizeof(int));
 
-    int test = *values;
-
-    printf("\nOriginal Sparse Matrix\n");
+    printf("\n*************************  Original Sparse Matrix  **************************\n");
     print2DArray(&mat, N);
+    printf("\n*****************************************************************************\n");
 
-    printf("\n\nConverting To CRS Format\n");
+    printf("\n************************* Converting To CRS Format  *************************\n");
     convertToCRS(&mat, values, columnIndexes, rowPointers, N);
 
     printf("\nValues Array\n");
@@ -331,24 +308,14 @@ int main() {
     print1DArray(columnIndexes, NoOfNonZeroElements);
     printf("\n\nRow Pointers\n");
     print1DArray(rowPointers, N+1);
-    printf("\n\n");
+    printf("\n\n*****************************************************************************\n");
+    //printf("\n\n");
 
     //printf("Element at (3,3) is %d",getMatElementAt(3, 3, values, columnIndexes, rowPointers));
 
-    printf("Setting Diagonal Elements to 2016");
+    printf("\n******************** Setting Diagonal Elements to 2016  *********************\n");
     for (i = 1; i <= N; i++) {
-        test = *values;
-        printf("Setting element at (%d,%d)",i,i);
         setMatElementAt(i, i, values, columnIndexes, rowPointers, 2016, &NoOfNonZeroElements, N);
-        test = *values;
-        printf("\n\nValues Array\n");
-        print1DArray(values, NoOfNonZeroElements);
-        printf("\n\nColumn Indexes Array\n");
-        print1DArray(columnIndexes, NoOfNonZeroElements);
-        printf("\n\nRow Pointers\n");
-        print1DArray(rowPointers, N+1);
-        printf("\n\n");
-
     }
 
     //printf("\n\n");
@@ -359,22 +326,24 @@ int main() {
     //setMatElementAt(3, 3, &values, &columnIndexes, &rowPointers, 2016, &NoOfNonZeroElements, N);
     //setMatElementAt(4, 4, &values, &columnIndexes, &rowPointers, 2016, &NoOfNonZeroElements, N);
     //setMatElementAt(5, 5, &values, &columnIndexes, &rowPointers, 2016, &NoOfNonZeroElements, N);
-    /*printf("\n\nValues Array\n");
-    print1DArray(&values, NoOfNonZeroElements);
+    printf("\nValues Array\n");
+    print1DArray(values, NoOfNonZeroElements);
     printf("\n\nColumn Indexes Array\n");
-    print1DArray(&columnIndexes, NoOfNonZeroElements);
+    print1DArray(columnIndexes, NoOfNonZeroElements);
     printf("\n\nRow Pointers\n");
-    print1DArray(&rowPointers, N+1);
-    printf("\n\n");*/
+    print1DArray(rowPointers, N+1);
+    printf("\n\n*****************************************************************************\n");
+    //printf("\n\n");
 
 
-    /*printf("\n\nConverting To CCS Format");
-    convertToCCSFromCRS(&values, &columnIndexes, &rowPointers, &rowIndexes, &columnPointers, N);
+    printf("\n************************* Converting To CCS Format  *************************\n");
+    convertToCCSFromCRS(values, columnIndexes, rowPointers, rowIndexes, columnPointers, N);
 
-    printf("\n\nRow Indexes Array\n");
-    print1DArray(&rowIndexes, NoOfNonZeroElements);
+    printf("\nRow Indexes Array\n");
+    print1DArray(rowIndexes, NoOfNonZeroElements);
     printf("\n\nColumn Pointers\n");
-    print1DArray(&columnPointers, N+1);*/
+    print1DArray(columnPointers, N+1);
+    printf("\n\n*****************************************************************************\n");
 
     return 0;
 }
