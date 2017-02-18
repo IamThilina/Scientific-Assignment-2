@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 void print2DArray(int *array, int size){
 
@@ -75,6 +76,7 @@ int getMatElementAt(int row, int column, int *values, int * columnIndexes, int *
 void setMatElementAt(int row, int column, int *values, int * columnIndexes, int *rowPointers, int newValue, int *NoOfNonZeroElements, int size){
 
     int offset;
+    int temp = *values;
     int rowPointer = *(rowPointers+(row-1));
 
     if(rowPointer == -1){ // adding to complete zero row
@@ -86,6 +88,8 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
 
         offset = (rowPointer-1); // 1 to counter the way arrays are indexed, 1 to go back to previous row
 
+        columnIndexes = realloc(columnIndexes, *NoOfNonZeroElements+1); //reallocating memory for columnIndexes
+        values = realloc(values, *NoOfNonZeroElements+1); //reallocating memory for values
         //updating values and columnIndexes
         for (int i = *NoOfNonZeroElements; i > offset; i--) {
             *(columnIndexes+i) = *(columnIndexes +i-1);
@@ -110,6 +114,9 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
         int columnIndex = *(columnIndexes+offset);
 
         if(columnIndex > column){ // overriding a zero element
+
+            columnIndexes = realloc(columnIndexes, *NoOfNonZeroElements+1); //reallocating memory for columnIndexes
+            values = realloc(values, *NoOfNonZeroElements+1); //reallocating memory for values
             //updating values and columnIndexes
             for (int i = *NoOfNonZeroElements; i > offset; i--) {
                 *(columnIndexes+i) = *(columnIndexes +i-1);
@@ -117,7 +124,7 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
             }
             *(columnIndexes+offset) = column;
             *(values+offset) = newValue;
-            *NoOfNonZeroElements++;
+            *NoOfNonZeroElements += 1;
 
             //updating the rowPointers
             for (int j = row; j <= size; ++j) {
@@ -131,6 +138,8 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
                 if(offset == *(rowPointers+row)-1 || offset == *(rowPointers+row+1)-1 || columnIndex > column) {
                     // First 2 conditions : Offset is at next row.Element must be the last non zero element of the row. overriding a zero
                     // Last conditions : there are more elements in the required row. overriding a zero
+                    columnIndexes = realloc(columnIndexes, *NoOfNonZeroElements+1); //reallocating memory for columnIndexes
+                    values = realloc(values, *NoOfNonZeroElements+1); //reallocating memory for values
                     for (int i = *NoOfNonZeroElements; i > offset; i--) {
                         *(columnIndexes+i) = *(columnIndexes +i-1);
                         *(values+i) = *(values+i-1);
@@ -149,13 +158,6 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
                 } else if(columnIndex == column){ //overriding an existing element
                     *(columnIndexes+offset) = column;
                     *(values+offset) = newValue;
-
-                    //updating the rowPointers
-                    for (int j = row; j <= size; ++j) {
-                        if(*(rowPointers+j) != -1){
-                            *(rowPointers+j) += 1;
-                        }
-                    }
                     break;
                 } else{
                     continue;
@@ -165,6 +167,10 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
             *(values+offset) = newValue;
         }
     }
+}
+
+void pointerTest(int *A){
+    *A = 1000;
 }
 
 void convertToCCSFromCRS(int *values, int *columnIndexes, int *rowPointers, int *rowIndexes, int *columnPointers, int size){
@@ -237,13 +243,14 @@ void convertToCCSFromCRS(int *values, int *columnIndexes, int *rowPointers, int 
         else
             firstNonZeroColumnFound = 0;
     }
+    *columnPointers++ = count+1; // end of columnIndexes
 }
 
 int main() {
 
     const int N = 5;
     int NoOfNonZeroElements = 7;
-
+    int i,j;
     int mat[5][5] = {
             {1, 0, 0, 2, 0},
             {0, 0, 0, 4, 0},
@@ -252,18 +259,48 @@ int main() {
             {0, 32, 0, 0, 64}
     };
 
+    /*int *A;
+
+    A = (int*) malloc(2*sizeof(int));
+
+    for (int k = 0; k < 2; ++k) {
+        *(A+k) = k;
+        printf("%d ",*(A+k));
+    }
+
+    A = realloc(A, 4);
+    printf("\n");
+    for (int k = 0; k < 4; ++k) {
+        printf("%d ",*(A+k));
+    }
+
+    pointerTest(A);
+    printf("\n%d",*A);*/
+
     /*
      * Value Array
      * 1 2 4 8 16 32 64
-     * 1 2 4 2017 8 16 32 64
+     * 2016 2 4 8 16 32 64
+     * 2016 2 2016 4 8 16 32 64
+     * 2016 2 2016 4 2016 8 16 32 64
+     * 2016 2 2016 4 2016 8 2016 16 32 64
+     * 2016 2 2016 4 2016 8 2016 16 32 2016
      *
      * Column Indexes
      * 1 4 4 2 5 2 5
-     * 1 4 4 3 2 5 2 5
+     * 1 4 4 2 5 2 5
+     * 1 4 2 4 2 5 2 5
+     * 1 4 2 4 3 2 5 2 5
+     * 1 4 2 4 3 2 4 5 2 5
+     * 1 4 2 4 3 2 4 5 2 5
      *
      * RowPointers
      * 1 3 -1 4 6 8
-     * 1 3 4 5 7 9
+     * 1 3 -1 4 6 8
+     * 1 3 -1 5 7 9
+     * 1 3  5 6 8 10
+     * 1 3  5 6 9 11
+     * 1 3  5 6 9 11
      *
      * Row Indexes
      * 1 4 5 1 2 4 5
@@ -272,49 +309,72 @@ int main() {
      * 1 2 -1 4 6 8
      * */
 
-    int values[NoOfNonZeroElements];
-    int columnIndexes[NoOfNonZeroElements];
-    int rowPointers[N];
+    int *values, *columnIndexes, *rowPointers;
     int rowIndexes[NoOfNonZeroElements];
     int columnPointers[N];
+
+    values = (int*) malloc(NoOfNonZeroElements*sizeof(int));
+    columnIndexes = (int*) malloc(NoOfNonZeroElements*sizeof(int));
+    rowPointers = (int*) malloc(N*sizeof(int));
+
+    int test = *values;
 
     printf("\nOriginal Sparse Matrix\n");
     print2DArray(&mat, N);
 
     printf("\n\nConverting To CRS Format\n");
-    convertToCRS(&mat, &values, &columnIndexes, &rowPointers, N);
+    convertToCRS(&mat, values, columnIndexes, rowPointers, N);
 
     printf("\nValues Array\n");
+    print1DArray(values, NoOfNonZeroElements);
+    printf("\n\nColumn Indexes Array\n");
+    print1DArray(columnIndexes, NoOfNonZeroElements);
+    printf("\n\nRow Pointers\n");
+    print1DArray(rowPointers, N+1);
+    printf("\n\n");
+
+    //printf("Element at (3,3) is %d",getMatElementAt(3, 3, values, columnIndexes, rowPointers));
+
+    printf("Setting Diagonal Elements to 2016");
+    for (i = 1; i <= N; i++) {
+        test = *values;
+        printf("Setting element at (%d,%d)",i,i);
+        setMatElementAt(i, i, values, columnIndexes, rowPointers, 2016, &NoOfNonZeroElements, N);
+        test = *values;
+        printf("\n\nValues Array\n");
+        print1DArray(values, NoOfNonZeroElements);
+        printf("\n\nColumn Indexes Array\n");
+        print1DArray(columnIndexes, NoOfNonZeroElements);
+        printf("\n\nRow Pointers\n");
+        print1DArray(rowPointers, N+1);
+        printf("\n\n");
+
+    }
+
+    //printf("\n\n");
+    //printf("Element at (3,3) is %d",getMatElementAt(1, 3, &values, &columnIndexes, &rowPointers));
+
+    //setMatElementAt(1, 1, &values, &columnIndexes, &rowPointers, 2016, &NoOfNonZeroElements, N);
+    //setMatElementAt(2, 2, &values, &columnIndexes, &rowPointers, 2016, &NoOfNonZeroElements, N);
+    //setMatElementAt(3, 3, &values, &columnIndexes, &rowPointers, 2016, &NoOfNonZeroElements, N);
+    //setMatElementAt(4, 4, &values, &columnIndexes, &rowPointers, 2016, &NoOfNonZeroElements, N);
+    //setMatElementAt(5, 5, &values, &columnIndexes, &rowPointers, 2016, &NoOfNonZeroElements, N);
+    /*printf("\n\nValues Array\n");
     print1DArray(&values, NoOfNonZeroElements);
     printf("\n\nColumn Indexes Array\n");
     print1DArray(&columnIndexes, NoOfNonZeroElements);
     printf("\n\nRow Pointers\n");
     print1DArray(&rowPointers, N+1);
-    printf("\n\n");
-
-    printf("Element at (3,3) is %d",getMatElementAt(3, 3, &values, &columnIndexes, &rowPointers));
-
-    printf("\n\nSetting Element at (3,3) to 2017");
-    setMatElementAt(3, 3, &values, &columnIndexes, &rowPointers, 2017, &NoOfNonZeroElements, N);
-    printf("\n\n");
-    printf("Element at (3,3) is %d",getMatElementAt(1, 3, &values, &columnIndexes, &rowPointers));
-
-    printf("\n======================\n");
-    printf("\nValues\n");
-    print1DArray(&values, NoOfNonZeroElements);
-    printf("\nColumn Indexes\n");
-    print1DArray(&columnIndexes, NoOfNonZeroElements);
-    printf("\nRow Pointers\n");
-    print1DArray(&rowPointers, N+1);
+    printf("\n\n");*/
 
 
-    printf("\n\nConverting To CCS Format");
+    /*printf("\n\nConverting To CCS Format");
     convertToCCSFromCRS(&values, &columnIndexes, &rowPointers, &rowIndexes, &columnPointers, N);
 
     printf("\n\nRow Indexes Array\n");
     print1DArray(&rowIndexes, NoOfNonZeroElements);
     printf("\n\nColumn Pointers\n");
-    print1DArray(&columnPointers, N);
+    print1DArray(&columnPointers, N+1);*/
 
     return 0;
 }
