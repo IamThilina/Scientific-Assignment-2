@@ -267,32 +267,13 @@ void convertToCCSFromCRS(int *values, int *columnIndexes, int *rowPointers, int 
 
 int main() {
 
-    const int N = 5;
+    int N;
     int i,j;
-
     int *mat, *values, *columnIndexes, *rowPointers, *rowIndexes, *columnPointers;
     int NoOfNonZeroElements = 0;
 
-    /*
-     * Value Array
-     * 1 2 4 8 16 32 64
-     * 2016 2 2016 4 2016 8 2016 16 32 2016
-     *
-     * Column Indexes
-     * 1 4 4 2 5 2 5
-     * 1 4 2 4 3 2 4 5 2 5
-     *
-     * RowPointers
-     * 1 3 -1 4 6 8
-     * 1 3  5 6 9 11
-     *
-     * Row Indexes
-     * 1 2 4 5 3 1 2 4 4 5
-     *
-     * Column Pointers
-     * 1 2 5 6 9 11
-     * */
-
+    printf("Enter The Matrix Size : ");
+    scanf("%d", &N);
     mat = (int*) malloc(N*N*sizeof(int));
     rowPointers = (int*) malloc((N+1)*sizeof(int));
     columnPointers = (int*) malloc((N+1)* sizeof(int));

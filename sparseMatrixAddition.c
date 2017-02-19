@@ -231,39 +231,9 @@ float elapsed_time_msec(struct timespec *begin, struct timespec *end, long *sec,
 
 int main() {
 
-    const int N = 10;
-    const int NUM_OF_TEST_CASES = 30;
-    int i,j;
-
-    /*int matA[5][5] = {
-            {1, 0, 0, 2, 0},
-            {0, 0, 0, 4, 0},
-            {0, 0, 8, 0, 0},
-            {0, 8, 0, 0, 16},
-            {0, 32, 0, 0, 64}
-    };
-    int matB[5][5] = {
-            {0, 1, 0, 0, 2},
-            {0, 0, 0, 4, 0},
-            {0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 16},
-            {32, 0, 0, 0, 64}
-    };*/
-
+    int N,NUM_OF_TEST_CASES;
+    int i;
     int *matA, *matB, *matC;
-
-    /*
-     * values
-     * 1 1 2 2 8 8 8 32 32 32 128
-     *
-     * columnIndexes
-     * 1 2 4 5 4 3 2 5 1 2 5
-     *
-     * rowPointers
-     * 1 5 6 7 9 12
-     *
-     * */
-
     int *matAValues, *matAColumnIndexes, *matARowPointers, matANNZ, *matBValues, *matBColumnIndexes,
         *matBRowPointers, matBNNZ, *matCValues, *matCColumnIndexes, *matCRowPointers, matCNNZ;
 
@@ -279,8 +249,12 @@ int main() {
     // do computation
     GET_TIME(t2);
     comp_time = elapsed_time_msec(&t1, &t2, &sec, &nsec);*/
+    printf("Enter The Matrix Size : ");
+    scanf("%d", &N);
+    printf("\nEnter The Number Of Test Cases : ");
+    scanf("%d", &NUM_OF_TEST_CASES);
 
-    for (int i = 0; i < NUM_OF_TEST_CASES; ++i) {
+    for (i = 0; i < NUM_OF_TEST_CASES; ++i) {
         matANNZ = 0;
         matBNNZ = 0;
         matCNNZ = 0;
