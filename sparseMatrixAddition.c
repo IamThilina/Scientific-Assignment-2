@@ -30,7 +30,6 @@ void print1DArray(int *array, int size){
 }
 
 void generateRandomSparseMat(int *mat, int *NNZ, int size){
-
     srand(time(NULL));
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < size; ++j) {
@@ -233,6 +232,7 @@ float elapsed_time_msec(struct timespec *begin, struct timespec *end, long *sec,
 int main() {
 
     const int N = 5;
+    const int NUM_OF_TEST_CASES = 30;
     int i,j;
 
     /*int matA[5][5] = {
@@ -270,7 +270,7 @@ int main() {
    /*Timing Variables*/
     struct timespec t0, t1, t2;
     unsigned long sec, nsec;
-    float comp_time; // in milli seconds
+    float comp_time, totalTimeForSparseAlgo = 0.0, totalTimeForDenseAlgo = 0.0; // in milli seconds
 
     /*Elapsed Time Calculation Code*/
     /*GET_TIME(t0);
@@ -280,82 +280,110 @@ int main() {
     GET_TIME(t2);
     comp_time = elapsed_time_msec(&t1, &t2, &sec, &nsec);*/
 
-    matANNZ = 0;
-    matBNNZ = 0;
-    matCNNZ = 0;
+    for (int i = 0; i < NUM_OF_TEST_CASES; ++i) {
+        matANNZ = 0;
+        matBNNZ = 0;
+        matCNNZ = 0;
 
-    //for input matrices
-    matA = (int*) malloc(N*N*sizeof(int));
-    matB = (int*) malloc(N*N*sizeof(int));
-    // to store the resulting matrix from dense algorithm
-    matC = (int*) malloc(N*N*sizeof(int));
-    // for sparse algorithm
-    matAValues = (int*) malloc(matANNZ*sizeof(int));
-    matAColumnIndexes = (int*) malloc(matANNZ*sizeof(int));
-    matARowPointers = (int*) malloc(N*sizeof(int));
-    matBValues = (int*) malloc(matBNNZ*sizeof(int));
-    matBColumnIndexes = (int*) malloc(matBNNZ*sizeof(int));
-    matBRowPointers = (int*) malloc(N*sizeof(int));
-    matCValues = (int*) malloc((matANNZ + matBNNZ)*sizeof(int));
-    matCColumnIndexes = (int*) malloc((matANNZ + matBNNZ)*sizeof(int));
-    matCRowPointers = (int*) malloc(N*sizeof(int));
+        //for input matrices
+        matA = (int*) malloc(N*N*sizeof(int));
+        matB = (int*) malloc(N*N*sizeof(int));
+        // to store the resulting matrix from dense algorithm
+        matC = (int*) malloc(N*N*sizeof(int));
+        // for sparse algorithm
+        matARowPointers = (int*) malloc(N*sizeof(int));
+        matBRowPointers = (int*) malloc(N*sizeof(int));
+        matCRowPointers = (int*) malloc(N*sizeof(int));
 
-    printf("\n*************************  Original Sparse Matrix-A **************************\n");
-    generateRandomSparseMat(matA, &matANNZ, N);
-    print2DArray(matA, N);
-    printf("\n*****************************************************************************\n");
-    printf("\n********************** Converting Mat-A To CRS Format  **********************\n");
-    convertToCRS(matA, matAValues, matAColumnIndexes, matARowPointers, N);
-    printf("\nValues Array\n");
-    print1DArray(matAValues, matANNZ);
-    printf("\n\nColumn Indexes Array\n");
-    print1DArray(matAColumnIndexes, matANNZ);
-    printf("\n\nRow Pointers\n");
-    print1DArray(matARowPointers, N+1);
-    printf("\n\n*****************************************************************************\n");
+        printf("\n*****************************************************************************\n");
+        printf("\n*******************************  Test Case %d ********************************\n",i+1);
+        printf("\n*****************************************************************************\n");
+        printf("\n*************************  Original Sparse Matrix-A **************************\n");
+        generateRandomSparseMat(matA, &matANNZ, N);
+        // allocate memory for matA CRS associated arrays
+        matAValues = (int*) malloc(matANNZ*sizeof(int));
+        matAColumnIndexes = (int*) malloc(matANNZ*sizeof(int));
+        print2DArray(matA, N);
+        printf("\n*****************************************************************************\n");
+        printf("\n********************** Converting Mat-A To CRS Format  **********************\n");
+        convertToCRS(matA, matAValues, matAColumnIndexes, matARowPointers, N);
+        printf("\nValues Array\n");
+        print1DArray(matAValues, matANNZ);
+        printf("\n\nColumn Indexes Array\n");
+        print1DArray(matAColumnIndexes, matANNZ);
+        printf("\n\nRow Pointers\n");
+        print1DArray(matARowPointers, N+1);
+        printf("\n\n*****************************************************************************\n");
 
-    printf("\n*************************  Original Sparse Matrix-B *************************\n");
-    generateRandomSparseMat(matB, &matBNNZ, N);
-    print2DArray(matB, N);
-    printf("\n*****************************************************************************\n");
-    printf("\n*********************** Converting Mat-B To CRS Format  *********************\n");
-    convertToCRS(matB, matBValues, matBColumnIndexes, matBRowPointers, N);
-    printf("\nValues Array\n");
-    print1DArray(matBValues, matBNNZ);
-    printf("\n\nColumn Indexes Array\n");
-    print1DArray(matBColumnIndexes, matBNNZ);
-    printf("\n\nRow Pointers\n");
-    print1DArray(matBRowPointers, N+1);
-    printf("\n\n*****************************************************************************\n");
+        printf("\n*************************  Original Sparse Matrix-B *************************\n");
+        generateRandomSparseMat(matB, &matBNNZ, N);
+        // allocate memory for matB CRS associated arrays
+        matBValues = (int*) malloc(matBNNZ*sizeof(int));
+        matBColumnIndexes = (int*) malloc(matBNNZ*sizeof(int));
+        // allocate memory for matC CRS associated arrays
+        matCValues = (int*) malloc((matANNZ + matBNNZ)*sizeof(int));
+        matCColumnIndexes = (int*) malloc((matANNZ + matBNNZ)*sizeof(int));
+        print2DArray(matB, N);
+        printf("\n*****************************************************************************\n");
+        printf("\n*********************** Converting Mat-B To CRS Format  *********************\n");
+        convertToCRS(matB, matBValues, matBColumnIndexes, matBRowPointers, N);
+        printf("\nValues Array\n");
+        print1DArray(matBValues, matBNNZ);
+        printf("\n\nColumn Indexes Array\n");
+        print1DArray(matBColumnIndexes, matBNNZ);
+        printf("\n\nRow Pointers\n");
+        print1DArray(matBRowPointers, N+1);
+        printf("\n\n*****************************************************************************\n");
 
-    printf("\n*********************** Running Dense Matrix Addition  **********************\n");
-    GET_TIME(t1);
-    denseMatrixAddition(matA, matB, matC, N);
-    GET_TIME(t2);
-    comp_time = elapsed_time_msec(&t1, &t2, &sec, &nsec);
-    printf("\nResulting Matrix-C\n");
-    print2DArray(matC, N);
-    printf("\n\nElapsed Time For Dense Algorithm\n");
-    printf("%f\n",comp_time);
-    printf("\n\n*****************************************************************************\n");
+        printf("\n*********************** Running Dense Matrix Addition  **********************\n");
+        GET_TIME(t1);
+        denseMatrixAddition(matA, matB, matC, N);
+        GET_TIME(t2);
+        comp_time = elapsed_time_msec(&t1, &t2, &sec, &nsec);
+        totalTimeForDenseAlgo += comp_time;
+        printf("\nResulting Matrix-C\n");
+        print2DArray(matC, N);
+        printf("\n\nElapsed Time For Dense Algorithm\n");
+        printf("%f\n",comp_time);
+        printf("\n\n*****************************************************************************\n");
 
-    printf("\n*********************** Running Sparse Matrix Addition  **********************\n");
-    GET_TIME(t1);
-    sparseMatrixAddition(matAValues, matAColumnIndexes, matARowPointers, matANNZ,
-                         matBValues, matBColumnIndexes, matBRowPointers, matBNNZ,
-                         matCValues, matCColumnIndexes, matCRowPointers, &matCNNZ, N);
-    GET_TIME(t2);
-    comp_time = elapsed_time_msec(&t1, &t2, &sec, &nsec);
-    printf("\nResulting CRS Format\n");
-    printf("\nValues Array\n");
-    print1DArray(matCValues, matCNNZ);
-    printf("\n\nColumn Indexes Array\n");
-    print1DArray(matCColumnIndexes, matCNNZ);
-    printf("\n\nRow Pointers\n");
-    print1DArray(matCRowPointers, N+1);
-    printf("\n\nElapsed Time For Sparse Algorithm\n");
-    printf("%f\n",comp_time);
-    printf("\n\n*****************************************************************************\n");
+        printf("\n*********************** Running Sparse Matrix Addition  **********************\n");
+        GET_TIME(t1);
+        sparseMatrixAddition(matAValues, matAColumnIndexes, matARowPointers, matANNZ,
+                             matBValues, matBColumnIndexes, matBRowPointers, matBNNZ,
+                             matCValues, matCColumnIndexes, matCRowPointers, &matCNNZ, N);
+        GET_TIME(t2);
+        comp_time = elapsed_time_msec(&t1, &t2, &sec, &nsec);
+        totalTimeForSparseAlgo += comp_time;
+        printf("\nResulting CRS Format\n");
+        printf("\nValues Array\n");
+        print1DArray(matCValues, matCNNZ);
+        printf("\n\nColumn Indexes Array\n");
+        print1DArray(matCColumnIndexes, matCNNZ);
+        printf("\n\nRow Pointers\n");
+        print1DArray(matCRowPointers, N+1);
+        printf("\n\nElapsed Time For Sparse Algorithm\n");
+        printf("%f\n",comp_time);
+        printf("\n****************************  End Of Test Case %d ****************************",i+1);
+        printf("\n*****************************************************************************\n");
+
+        /* Deallocate allocated memory */
+        free(matA);
+        free(matAValues);
+        free(matAColumnIndexes);
+        free(matARowPointers);
+        free(matB);
+        free(matBValues);
+        free(matBColumnIndexes);
+        free(matBRowPointers);
+        free(matC);
+        free(matCValues);
+        free(matCColumnIndexes);
+        free(matCRowPointers);
+    }
+
+    printf("Time For Dense Algo : %f\n",totalTimeForDenseAlgo/NUM_OF_TEST_CASES);
+    printf("Time For Sparse Algo : %f\n",totalTimeForSparseAlgo/NUM_OF_TEST_CASES);
 
     return 0;
 }
