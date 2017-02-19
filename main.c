@@ -294,8 +294,8 @@ int main() {
      * */
 
     mat = (int*) malloc(N*N*sizeof(int));
-    rowPointers = (int*) malloc(N*sizeof(int));
-    columnPointers = (int*) malloc(N* sizeof(int));
+    rowPointers = (int*) malloc((N+1)*sizeof(int));
+    columnPointers = (int*) malloc((N+1)* sizeof(int));
 
     printf("\n*************************  Original Sparse Matrix  **************************\n");
     generateRandomSparseMat(mat, &NoOfNonZeroElements, N);

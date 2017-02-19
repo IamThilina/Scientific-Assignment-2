@@ -33,7 +33,7 @@ void generateRandomSparseMat(int *mat, int *NNZ, int size){
     srand(time(NULL));
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < size; ++j) {
-            if(((int) rand()%10) > 5){  // add non zero
+            if(((int) rand()%10) > 8){  // add non zero
                 *((mat+i*size)+j) = ((int)rand()%MAXIMUM_NUMBER)+1;
                 *NNZ += 1;
             } else{  // add zero
@@ -231,7 +231,7 @@ float elapsed_time_msec(struct timespec *begin, struct timespec *end, long *sec,
 
 int main() {
 
-    const int N = 5;
+    const int N = 10;
     const int NUM_OF_TEST_CASES = 30;
     int i,j;
 
@@ -291,9 +291,9 @@ int main() {
         // to store the resulting matrix from dense algorithm
         matC = (int*) malloc(N*N*sizeof(int));
         // for sparse algorithm
-        matARowPointers = (int*) malloc(N*sizeof(int));
-        matBRowPointers = (int*) malloc(N*sizeof(int));
-        matCRowPointers = (int*) malloc(N*sizeof(int));
+        matARowPointers = (int*) malloc((N+1)*sizeof(int));
+        matBRowPointers = (int*) malloc((N+1)*sizeof(int));
+        matCRowPointers = (int*) malloc((N+1)*sizeof(int));
 
         printf("\n*****************************************************************************\n");
         printf("\n*******************************  Test Case %d ********************************\n",i+1);
