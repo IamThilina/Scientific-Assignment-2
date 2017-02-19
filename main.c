@@ -1,5 +1,11 @@
+//
+// Created by thilina on 2/19/17.
+//
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+
+#define MAXIMUM_NUMBER 10
 
 void print2DArray(int *array, int size){
 
@@ -18,8 +24,19 @@ void print1DArray(int *array, int size){
     }
 }
 
-void generateRandomSparseMat(int *mat, int size){
+void generateRandomSparseMat(int *mat, int *NNZ, int size){
 
+    srand(time(NULL));
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            if(((int) rand()%10) > 5){  // add non zero
+                *((mat+i*size)+j) = ((int)rand()%MAXIMUM_NUMBER)+1;
+                *NNZ += 1;
+            } else{  // add zero
+                *((mat+i*size)+j) = 0;
+            }
+        }
+    }
 }
 
 void convertToCRS(int *mat, int *values, int *columnIndexes, int *rowPointers, int size){
@@ -93,8 +110,8 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
 
         offset = (rowPointer-1); // 1 to counter the way arrays are indexed, 1 to go back to previous row
 
-        columnIndexes = realloc(columnIndexes, *NoOfNonZeroElements+1); //reallocating memory for columnIndexes
-        values = realloc(values, *NoOfNonZeroElements+1); //reallocating memory for values
+        //columnIndexes = realloc(columnIndexes, *NoOfNonZeroElements+1); //reallocating memory for columnIndexes
+        //values = realloc(values, *NoOfNonZeroElements+1); //reallocating memory for values
         //updating values and columnIndexes
         for (int i = *NoOfNonZeroElements; i > offset; i--) {
             *(columnIndexes+i) = *(columnIndexes +i-1);
@@ -120,8 +137,8 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
 
         if(columnIndex > column){ // overriding a zero element
 
-            columnIndexes = realloc(columnIndexes, *NoOfNonZeroElements+1); //reallocating memory for columnIndexes
-            values = realloc(values, *NoOfNonZeroElements+1); //reallocating memory for values
+            //columnIndexes = realloc(columnIndexes, *NoOfNonZeroElements+1); //reallocating memory for columnIndexes
+            //values = realloc(values, *NoOfNonZeroElements+1); //reallocating memory for values
             //updating values and columnIndexes
             for (int i = *NoOfNonZeroElements; i > offset; i--) {
                 *(columnIndexes+i) = *(columnIndexes +i-1);
@@ -143,8 +160,8 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
                 if(offset == *(rowPointers+row)-1 || offset == *(rowPointers+row+1)-1 || columnIndex > column) {
                     // First 2 conditions : Offset is at next row.Element must be the last non zero element of the row. overriding a zero
                     // Last conditions : there are more elements in the required row. overriding a zero
-                    columnIndexes = realloc(columnIndexes, *NoOfNonZeroElements+1); //reallocating memory for columnIndexes
-                    values = realloc(values, *NoOfNonZeroElements+1); //reallocating memory for values
+                    //columnIndexes = realloc(columnIndexes, *NoOfNonZeroElements+1); //reallocating memory for columnIndexes
+                    //values = realloc(values, *NoOfNonZeroElements+1); //reallocating memory for values
                     for (int i = *NoOfNonZeroElements; i > offset; i--) {
                         *(columnIndexes+i) = *(columnIndexes +i-1);
                         *(values+i) = *(values+i-1);
@@ -253,18 +270,9 @@ int main() {
     const int N = 5;
     int i,j;
 
-    //Q1 - d,e,f,g,h
-    int NoOfNonZeroElements = 7;
-    int mat[5][5] = {
-            {1, 0, 0, 2, 0},
-            {0, 0, 0, 4, 0},
-            {0, 0, 0, 0, 0},
-            {0, 8, 0, 0, 16},
-            {0, 32, 0, 0, 64}
-    };
+    int *mat, *values, *columnIndexes, *rowPointers, *rowIndexes, *columnPointers;
+    int NoOfNonZeroElements = 0;
 
-
-    //Q1 - d,e,f,g,h
     /*
      * Value Array
      * 1 2 4 8 16 32 64
@@ -285,24 +293,19 @@ int main() {
      * 1 2 5 6 9 11
      * */
 
-
-    //Q1 - d,e,f,g,h
-    int *values, *columnIndexes, *rowPointers, *rowIndexes, *columnPointers;
-
-    //Q1 - d,e,f,g,h
-    values = (int*) malloc(NoOfNonZeroElements*sizeof(int));
-    columnIndexes = (int*) malloc(NoOfNonZeroElements*sizeof(int));
+    mat = (int*) malloc(N*N*sizeof(int));
     rowPointers = (int*) malloc(N*sizeof(int));
-    rowIndexes = (int*) malloc(NoOfNonZeroElements*sizeof(int));
     columnPointers = (int*) malloc(N* sizeof(int));
 
-    // Q1 - d,e,f,g,h
     printf("\n*************************  Original Sparse Matrix  **************************\n");
-    print2DArray(&mat, N);
+    generateRandomSparseMat(mat, &NoOfNonZeroElements, N);
+    values = (int*) malloc(NoOfNonZeroElements*sizeof(int));
+    columnIndexes = (int*) malloc(NoOfNonZeroElements*sizeof(int));
+    print2DArray(mat, N);
     printf("\n*****************************************************************************\n");
 
     printf("\n************************* Converting To CRS Format  *************************\n");
-    convertToCRS(&mat, values, columnIndexes, rowPointers, N);
+    convertToCRS(mat, values, columnIndexes, rowPointers, N);
 
     printf("\nValues Array\n");
     print1DArray(values, NoOfNonZeroElements);
@@ -313,6 +316,9 @@ int main() {
     printf("\n\n*****************************************************************************\n");
 
     printf("\n******************** Setting Diagonal Elements to 2016  *********************\n");
+    columnIndexes = realloc(columnIndexes, NoOfNonZeroElements+N);
+    values = realloc(values, NoOfNonZeroElements+N);
+    rowIndexes = (int*) malloc((NoOfNonZeroElements+N)*sizeof(int));
     for (i = 1; i <= N; i++) {
         setMatElementAt(i, i, values, columnIndexes, rowPointers, 2016, &NoOfNonZeroElements, N);
     }
@@ -328,7 +334,9 @@ int main() {
     printf("\n************************* Converting To CCS Format  *************************\n");
     convertToCCSFromCRS(values, columnIndexes, rowPointers, rowIndexes, columnPointers, N);
 
-    printf("\nRow Indexes Array\n");
+    printf("\nValues Array\n");
+    print1DArray(values, NoOfNonZeroElements);
+    printf("\n\nRow Indexes Array\n");
     print1DArray(rowIndexes, NoOfNonZeroElements);
     printf("\n\nColumn Pointers\n");
     print1DArray(columnPointers, N+1);

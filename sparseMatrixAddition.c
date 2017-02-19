@@ -7,6 +7,8 @@
 #include <time.h> // for clock_gettime( )
 #include <errno.h> // for perror( )
 
+#define MAXIMUM_NUMBER 10
+
 #define GET_TIME(x) if (clock_gettime(CLOCK_MONOTONIC, &(x)) < 0) \
 { perror("clock_gettime( ):"); exit(EXIT_FAILURE); }
 
@@ -27,8 +29,19 @@ void print1DArray(int *array, int size){
     }
 }
 
-void generateRandomSparseMat(int *mat, int size){
+void generateRandomSparseMat(int *mat, int *NNZ, int size){
 
+    srand(time(NULL));
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            if(((int) rand()%10) > 5){  // add non zero
+                *((mat+i*size)+j) = ((int)rand()%MAXIMUM_NUMBER)+1;
+                *NNZ += 1;
+            } else{  // add zero
+                *((mat+i*size)+j) = 0;
+            }
+        }
+    }
 }
 
 void convertToCRS(int *mat, int *values, int *columnIndexes, int *rowPointers, int size){
@@ -222,8 +235,7 @@ int main() {
     const int N = 5;
     int i,j;
 
-    //Q1 - k
-    int matA[5][5] = {
+    /*int matA[5][5] = {
             {1, 0, 0, 2, 0},
             {0, 0, 0, 4, 0},
             {0, 0, 8, 0, 0},
@@ -236,11 +248,10 @@ int main() {
             {0, 0, 0, 0, 0},
             {0, 0, 0, 0, 16},
             {32, 0, 0, 0, 64}
-    };
+    };*/
 
-    int *matC;
+    int *matA, *matB, *matC;
 
-    //Q1 - k
     /*
      * values
      * 1 1 2 2 8 8 8 32 32 32 128
@@ -253,27 +264,32 @@ int main() {
      *
      * */
 
-    //Q1 - k
     int *matAValues, *matAColumnIndexes, *matARowPointers, matANNZ, *matBValues, *matBColumnIndexes,
-            *matBRowPointers, matBNNZ, *matCValues, *matCColumnIndexes, *matCRowPointers, matCNNZ;
+        *matBRowPointers, matBNNZ, *matCValues, *matCColumnIndexes, *matCRowPointers, matCNNZ;
 
-   /* *//*Timing Variables*//*
+   /*Timing Variables*/
     struct timespec t0, t1, t2;
     unsigned long sec, nsec;
     float comp_time; // in milli seconds
 
-    *//*Elapsed Time Calculation Code*//*
-    GET_TIME(t0);
+    /*Elapsed Time Calculation Code*/
+    /*GET_TIME(t0);
     // do initializations, setting-up etc
     GET_TIME(t1);
     // do computation
     GET_TIME(t2);
     comp_time = elapsed_time_msec(&t1, &t2, &sec, &nsec);*/
 
-    //Q1 - k
-    matANNZ = 7;
-    matBNNZ = 7;
+    matANNZ = 0;
+    matBNNZ = 0;
     matCNNZ = 0;
+
+    //for input matrices
+    matA = (int*) malloc(N*N*sizeof(int));
+    matB = (int*) malloc(N*N*sizeof(int));
+    // to store the resulting matrix from dense algorithm
+    matC = (int*) malloc(N*N*sizeof(int));
+    // for sparse algorithm
     matAValues = (int*) malloc(matANNZ*sizeof(int));
     matAColumnIndexes = (int*) malloc(matANNZ*sizeof(int));
     matARowPointers = (int*) malloc(N*sizeof(int));
@@ -283,14 +299,13 @@ int main() {
     matCValues = (int*) malloc((matANNZ + matBNNZ)*sizeof(int));
     matCColumnIndexes = (int*) malloc((matANNZ + matBNNZ)*sizeof(int));
     matCRowPointers = (int*) malloc(N*sizeof(int));
-    matC = (int*) malloc(N*N*sizeof(int)); // to store the resulting matrix from dense algorithm
 
-    //Q1 - k
     printf("\n*************************  Original Sparse Matrix-A **************************\n");
-    print2DArray(&matA, N);
+    generateRandomSparseMat(matA, &matANNZ, N);
+    print2DArray(matA, N);
     printf("\n*****************************************************************************\n");
     printf("\n********************** Converting Mat-A To CRS Format  **********************\n");
-    convertToCRS(&matA, matAValues, matAColumnIndexes, matARowPointers, N);
+    convertToCRS(matA, matAValues, matAColumnIndexes, matARowPointers, N);
     printf("\nValues Array\n");
     print1DArray(matAValues, matANNZ);
     printf("\n\nColumn Indexes Array\n");
@@ -300,10 +315,11 @@ int main() {
     printf("\n\n*****************************************************************************\n");
 
     printf("\n*************************  Original Sparse Matrix-B *************************\n");
-    print2DArray(&matB, N);
+    generateRandomSparseMat(matB, &matBNNZ, N);
+    print2DArray(matB, N);
     printf("\n*****************************************************************************\n");
     printf("\n*********************** Converting Mat-B To CRS Format  *********************\n");
-    convertToCRS(&matB, matBValues, matBColumnIndexes, matBRowPointers, N);
+    convertToCRS(matB, matBValues, matBColumnIndexes, matBRowPointers, N);
     printf("\nValues Array\n");
     print1DArray(matBValues, matBNNZ);
     printf("\n\nColumn Indexes Array\n");
@@ -313,15 +329,23 @@ int main() {
     printf("\n\n*****************************************************************************\n");
 
     printf("\n*********************** Running Dense Matrix Addition  **********************\n");
-    denseMatrixAddition(&matA, &matB, matC, N);
+    GET_TIME(t1);
+    denseMatrixAddition(matA, matB, matC, N);
+    GET_TIME(t2);
+    comp_time = elapsed_time_msec(&t1, &t2, &sec, &nsec);
     printf("\nResulting Matrix-C\n");
     print2DArray(matC, N);
+    printf("\n\nElapsed Time For Dense Algorithm\n");
+    printf("%f\n",comp_time);
     printf("\n\n*****************************************************************************\n");
 
     printf("\n*********************** Running Sparse Matrix Addition  **********************\n");
+    GET_TIME(t1);
     sparseMatrixAddition(matAValues, matAColumnIndexes, matARowPointers, matANNZ,
                          matBValues, matBColumnIndexes, matBRowPointers, matBNNZ,
                          matCValues, matCColumnIndexes, matCRowPointers, &matCNNZ, N);
+    GET_TIME(t2);
+    comp_time = elapsed_time_msec(&t1, &t2, &sec, &nsec);
     printf("\nResulting CRS Format\n");
     printf("\nValues Array\n");
     print1DArray(matCValues, matCNNZ);
@@ -329,6 +353,8 @@ int main() {
     print1DArray(matCColumnIndexes, matCNNZ);
     printf("\n\nRow Pointers\n");
     print1DArray(matCRowPointers, N+1);
+    printf("\n\nElapsed Time For Sparse Algorithm\n");
+    printf("%f\n",comp_time);
     printf("\n\n*****************************************************************************\n");
 
     return 0;
