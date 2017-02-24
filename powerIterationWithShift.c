@@ -1,5 +1,5 @@
 //
-// Created by thilina on 2/23/17.
+// Created by thilina on 2/24/17.
 //
 
 #include <stdio.h>
@@ -29,11 +29,12 @@ int main() {
 
     const int N = 3;
     const double trueEignValue = 11.000000;
+    const double shift = 4.71428571;
     int i,j,iteration=0;
     double mat[3][3] = {
-            {2.0, 3.0, 2.0},
-            {10.0, 3.0, 4.0},
-            {3.0, 6.0, 1.0}
+            {2.0 - shift, 3.0, 2.0},
+            {10.0, 3.0 - shift, 4.0},
+            {3.0, 6.0, 1.0 - shift}
     };
     double computedEignValue = 0.0;
     double temp, absoluteError,relativeError = 1;
@@ -58,6 +59,7 @@ int main() {
             if(fabs(temp)>computedEignValue)
                 computedEignValue = fabs(temp);
         }
+        computedEignValue += shift;
         // normalizing eign vector produced in this iteration
         for (i = 0; i < N; ++i) {
             eignVector[i] = eignVector[i]/computedEignValue;
