@@ -323,5 +323,13 @@ int main() {
     print1DArray(columnPointers, N+1);
     printf("\n\n*****************************************************************************\n");
 
+    /*releasing allocated memory blocks*/
+    free(mat);
+    free(columnIndexes);
+    free(rowPointers);
+    free(rowIndexes);
+    free(columnPointers);
+    free(values);
+
     return 0;
 }
