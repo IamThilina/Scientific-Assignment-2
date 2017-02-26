@@ -46,9 +46,10 @@ void generateRandomSparseMat(int *mat, int size){
     while(count < nnz){
         randomRow = ((int)rand()%size);
         randomColumn = ((int)rand()%size);
-        /*distinct number sequence is too large so that same (randomRow,randomColumn) combination will not be generated*/
-        *((mat+randomRow*size)+randomColumn) = ((int)rand()%MAXIMUM_NUMBER)+1;
-        count++;
+        if(*((mat+randomRow*size)+randomColumn) == 0) { // if non-zero element was added earlier, skip this
+            *((mat + randomRow * size) + randomColumn) = ((int) rand() % MAXIMUM_NUMBER) + 1;
+            count++;
+        }
     }
 }
 

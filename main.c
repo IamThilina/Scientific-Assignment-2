@@ -34,9 +34,11 @@ void generateRandomSparseMat(int *mat, int size){
     while(count < nnz){
         randomRow = ((int)rand()%size);
         randomColumn = ((int)rand()%size);
-        /*distinct number sequence is too large so that same (randomRow,randomColumn) combination will not be generated*/
-        *((mat+randomRow*size)+randomColumn) = ((int)rand()%MAXIMUM_NUMBER)+1;
-        count++;
+        printf("(%d,%d)\n",randomRow,randomColumn);
+        if(*((mat+randomRow*size)+randomColumn) == 0) { // if non-zero element was added earlier, skip this
+            *((mat + randomRow * size) + randomColumn) = ((int) rand() % MAXIMUM_NUMBER) + 1;
+            count++;
+        }
     }
 }
 
@@ -73,7 +75,6 @@ int getMatElementAt(int row, int column, int *values, int * columnIndexes, int *
         return 0;
 
     int offset = (rowBeginIndex-1);
-    //columnIndexes += offset;
     int scanningColumn = *(columnIndexes + offset);
 
     int nextRowBeginIndex = *(rowPointers+row);
@@ -115,8 +116,6 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
 
         offset = (rowPointer-1); // 1 to counter the way arrays are indexed, 1 to go back to previous row
 
-        //columnIndexes = realloc(columnIndexes, *NoOfNonZeroElements+1); //reallocating memory for columnIndexes
-        //values = realloc(values, *NoOfNonZeroElements+1); //reallocating memory for values
         //updating values and columnIndexes
         for (int i = *NoOfNonZeroElements; i > offset; i--) {
             *(columnIndexes+i) = *(columnIndexes +i-1);
@@ -143,14 +142,12 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
         int nextRowBeginIndex = *(rowPointers+row);
         int k=1;
         while(nextRowBeginIndex<0){ // find the pointer to next non complete zero row
-            nextRowBeginIndex = *(rowPointers + row + k);
+            nextRowBeginIndex = *(rowPointers + row + k++);
         }
         int offsetToNextRow = nextRowBeginIndex - 1;
 
         if(columnIndex > column){ // overriding a zero element
 
-            //columnIndexes = realloc(columnIndexes, *NoOfNonZeroElements+1); //reallocating memory for columnIndexes
-            //values = realloc(values, *NoOfNonZeroElements+1); //reallocating memory for values
             //updating values and columnIndexes
             for (int i = *NoOfNonZeroElements; i > offset; i--) {
                 *(columnIndexes+i) = *(columnIndexes +i-1);
@@ -299,22 +296,15 @@ int main() {
     printf("\n************************* Converting To CRS Format  *************************\n");
     convertToCRS(mat, values, columnIndexes, rowPointers, N);
 
-    /*printf("\nValues Array\n");
+    printf("\nValues Array\n");
     print1DArray(values, NoOfNonZeroElements);
     printf("\n\nColumn Indexes Array\n");
     print1DArray(columnIndexes, NoOfNonZeroElements);
     printf("\n\nRow Pointers\n");
     print1DArray(rowPointers, N+1);
-    printf("\n\n*****************************************************************************\n");*/
+    printf("\n\n*****************************************************************************\n");
 
-    for (int k = 0; k < N; ++k) {
-        for (int l = 0; l < N; ++l) {
-            printf("%2d ",getMatElementAt(k+1, l+1, values, columnIndexes, rowPointers));
-        }
-        printf("\n");
-    }
-
-    /*printf("\n******************** Setting Diagonal Elements to 2016  *********************\n");
+    printf("\n******************** Setting Diagonal Elements to 2016  *********************\n");
     columnIndexes = realloc(columnIndexes, NoOfNonZeroElements+N);
     values = realloc(values, NoOfNonZeroElements+N);
     rowIndexes = (int*) malloc((NoOfNonZeroElements+N)*sizeof(int));
@@ -339,7 +329,7 @@ int main() {
     print1DArray(rowIndexes, NoOfNonZeroElements);
     printf("\n\nColumn Pointers\n");
     print1DArray(columnPointers, N+1);
-    printf("\n\n*****************************************************************************\n");*/
+    printf("\n\n*****************************************************************************\n");
 
     /*releasing allocated memory blocks*/
     /*free(mat);
