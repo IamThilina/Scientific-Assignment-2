@@ -29,7 +29,7 @@ int main() {
 
     const int N = 3;
     const double trueEignValue = 11.000000;
-    const double shift = 4.71428571;
+    const double shift = -3;
     int i,j,iteration=0;
     double mat[3][3] = {
             {2.0 - shift, 3.0, 2.0},
@@ -67,12 +67,12 @@ int main() {
         }
 
         // error calculation
-        absoluteError =fabs(computedEignValue - trueEignValue);
+        absoluteError =fabs((computedEignValue+shift) - trueEignValue);
         relativeError = absoluteError/fabs(trueEignValue);
         printf("\nComputed Eign Vector\n");
         print1DArray(&eignVector,N);
         printf("\n\nComputed Eign Value\n");
-        printf("%f",computedEignValue);
+        printf("%f",computedEignValue+shift);
         printf("\n\nAbsolute Error\n");
         printf("%f",absoluteError);
         printf("\n\nRelative Error\n");

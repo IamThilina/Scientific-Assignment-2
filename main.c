@@ -76,15 +76,20 @@ int getMatElementAt(int row, int column, int *values, int * columnIndexes, int *
     columnIndexes += offset;
     int columnIndex = *columnIndexes;
 
+    int nextRowBeginIndex = *(rowPointers+row);
+    int k=1;
+    while(nextRowBeginIndex<0){ // find the pointer to next non complete zero row
+        nextRowBeginIndex = *(rowPointers + row + k);
+    }
+    int offsetToNextRow = nextRowBeginIndex - 1;
+
     if(columnIndex > column){
-        //printf("\nMORE");
         return 0;
     } else if (columnIndex < column){
-        //printf("LESS\n");
         while (columnIndex < column){
             columnIndex = *++columnIndexes;
             offset++;
-            if(offset == *(rowPointers+row)-1 || offset == *(rowPointers+row+1)-1 || columnIndex > column) { // beginning of next row
+            if(offset < offsetToNextRow || columnIndex > column) { // beginning of next row
                 return 0;
             }
         }
@@ -136,6 +141,13 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
         offset = (rowPointer-1);
         int columnIndex = *(columnIndexes+offset);
 
+        int nextRowBeginIndex = *(rowPointers+row);
+        int k=1;
+        while(nextRowBeginIndex<0){ // find the pointer to next non complete zero row
+            nextRowBeginIndex = *(rowPointers + row + k);
+        }
+        int offsetToNextRow = nextRowBeginIndex - 1;
+
         if(columnIndex > column){ // overriding a zero element
 
             //columnIndexes = realloc(columnIndexes, *NoOfNonZeroElements+1); //reallocating memory for columnIndexes
@@ -158,11 +170,9 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
         } else if (columnIndex < column){
             while (columnIndex < column){
                 columnIndex = *(columnIndexes+ ++offset);
-                if(offset == *(rowPointers+row)-1 || offset == *(rowPointers+row+1)-1 || columnIndex > column) {
-                    // First 2 conditions : Offset is at next row.Element must be the last non zero element of the row. overriding a zero
+                if(offset == offsetToNextRow || columnIndex > column) {
+                    // First condition : Offset is at next row.Element must be the last non zero element of the row. overriding a zero
                     // Last conditions : there are more elements in the required row. overriding a zero
-                    //columnIndexes = realloc(columnIndexes, *NoOfNonZeroElements+1); //reallocating memory for columnIndexes
-                    //values = realloc(values, *NoOfNonZeroElements+1); //reallocating memory for values
                     for (int i = *NoOfNonZeroElements; i > offset; i--) {
                         *(columnIndexes+i) = *(columnIndexes +i-1);
                         *(values+i) = *(values+i-1);
@@ -182,7 +192,7 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
                     *(columnIndexes+offset) = column;
                     *(values+offset) = newValue;
                     break;
-                } else{
+                } else{ // columnIndex < column
                     continue;
                 }
             }
