@@ -29,17 +29,19 @@ void print1DArray(int *array, int size){
     }
 }
 
-void generateRandomSparseMat(int *mat, int *NNZ, int size){
+void generateRandomSparseMat(int *mat, int size){
+
+    int nnz = size*size*0.1;  // number of non-zero elements must be added
+    int count = 0; // number of non-zero elements already added
+    int randomRow, randomColumn;
+
     srand(time(NULL));
-    for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-            if(((int) rand()%10) > 8){  // add non zero
-                *((mat+i*size)+j) = ((int)rand()%MAXIMUM_NUMBER)+1;
-                *NNZ += 1;
-            } else{  // add zero
-                *((mat+i*size)+j) = 0;
-            }
-        }
+    while(count < nnz){
+        randomRow = ((int)rand()%size);
+        randomColumn = ((int)rand()%size);
+        /*distinct number sequence is too large so that same (randomRow,randomColumn) combination will not be generated*/
+        *((mat+randomRow*size)+randomColumn) = ((int)rand()%MAXIMUM_NUMBER)+1;
+        count++;
     }
 }
 
@@ -260,20 +262,22 @@ int main() {
         matCNNZ = 0;
 
         //for input matrices
-        matA = (int*) malloc(N*N*sizeof(int));
-        matB = (int*) malloc(N*N*sizeof(int));
+        matA = (int*) calloc(N*N, sizeof(int)); // allocate memory and initialize to zero
+        matB = (int*) calloc(N*N, sizeof(int)); // allocate memory and initialize to zero
         // to store the resulting matrix from dense algorithm
         matC = (int*) malloc(N*N*sizeof(int));
         // for sparse algorithm
         matARowPointers = (int*) malloc((N+1)*sizeof(int));
         matBRowPointers = (int*) malloc((N+1)*sizeof(int));
         matCRowPointers = (int*) malloc((N+1)*sizeof(int));
+        matANNZ = N*N*0.1;
+        matBNNZ = N*N*0.1;
 
         printf("\n*****************************************************************************\n");
         printf("\n*******************************  Test Case %d ********************************\n",i+1);
         printf("\n*****************************************************************************\n");
         printf("\n*************************  Original Sparse Matrix-A **************************\n");
-        generateRandomSparseMat(matA, &matANNZ, N);
+        generateRandomSparseMat(matA, N);
         // allocate memory for matA CRS associated arrays
         matAValues = (int*) malloc(matANNZ*sizeof(int));
         matAColumnIndexes = (int*) malloc(matANNZ*sizeof(int));
@@ -290,7 +294,7 @@ int main() {
         printf("\n\n*****************************************************************************\n");
 
         printf("\n*************************  Original Sparse Matrix-B *************************\n");
-        generateRandomSparseMat(matB, &matBNNZ, N);
+        generateRandomSparseMat(matB, N);
         // allocate memory for matB CRS associated arrays
         matBValues = (int*) malloc(matBNNZ*sizeof(int));
         matBColumnIndexes = (int*) malloc(matBNNZ*sizeof(int));

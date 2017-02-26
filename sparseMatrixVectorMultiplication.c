@@ -36,17 +36,19 @@ void printColumnMat(int *array, int size){
     }
 }
 
-void generateRandomSparseMat(int *mat, int *NNZ, int size){
+void generateRandomSparseMat(int *mat, int size){
+
+    int nnz = size*size*0.1;  // number of non-zero elements must be added
+    int count = 0; // number of non-zero elements already added
+    int randomRow, randomColumn;
+
     srand(time(NULL));
-    for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-            if(((int) rand()%10) > 8){  // add non zero
-                *((mat+i*size)+j) = ((int)rand()%MAXIMUM_NUMBER)+1;
-                *NNZ += 1;
-            } else{  // add zero
-                *((mat+i*size)+j) = 0;
-            }
-        }
+    while(count < nnz){
+        randomRow = ((int)rand()%size);
+        randomColumn = ((int)rand()%size);
+        /*distinct number sequence is too large so that same (randomRow,randomColumn) combination will not be generated*/
+        *((mat+randomRow*size)+randomColumn) = ((int)rand()%MAXIMUM_NUMBER)+1;
+        count++;
     }
 }
 
@@ -183,12 +185,13 @@ int main() {
         matBValues = (int*) malloc(N*sizeof(int));
         matBColumnIndexes = (int*) malloc(N*sizeof(int));
         matBRowPointers = (int*) malloc((N+1)*sizeof(int));
+        matANNZ = N*N*0.1;
 
         printf("\n*****************************************************************************\n");
         printf("\n*******************************  Test Case %d ********************************\n",i+1);
         printf("\n*****************************************************************************\n");
         printf("\n*************************  Original Sparse Matrix-A **************************\n");
-        generateRandomSparseMat(matA, &matANNZ, N);
+        generateRandomSparseMat(matA, N);
         generateRandomVector(vector, N);
         // allocate memory for matA CRS associated arrays
         matAValues = (int*) malloc(matANNZ*sizeof(int));

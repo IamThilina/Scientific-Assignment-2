@@ -39,10 +39,10 @@ void initializeProbabilityTransitionMatrix(double *mat, int size){
         //printf("%f\n",(double)1/nnz);
         count = 0;
         while (count < nnz){
-            count++;
             randomRow = ((int)rand()%size);
             //printf("%d ",randomRow);
             *((mat+randomRow*size)+i) = (double)1/nnz;
+            count++;
         }
         //printf("\n");
     }

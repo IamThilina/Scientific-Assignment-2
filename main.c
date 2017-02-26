@@ -24,18 +24,19 @@ void print1DArray(int *array, int size){
     }
 }
 
-void generateRandomSparseMat(int *mat, int *NNZ, int size){
+void generateRandomSparseMat(int *mat, int size){
+
+    int nnz = size*size*0.1;  // number of non-zero elements must be added
+    int count = 0; // number of non-zero elements already added
+    int randomRow, randomColumn;
 
     srand(time(NULL));
-    for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-            if(((int) rand()%10) > 5){  // add non zero
-                *((mat+i*size)+j) = ((int)rand()%MAXIMUM_NUMBER)+1;
-                *NNZ += 1;
-            } else{  // add zero
-                *((mat+i*size)+j) = 0;
-            }
-        }
+    while(count < nnz){
+        randomRow = ((int)rand()%size);
+        randomColumn = ((int)rand()%size);
+        /*distinct number sequence is too large so that same (randomRow,randomColumn) combination will not be generated*/
+        *((mat+randomRow*size)+randomColumn) = ((int)rand()%MAXIMUM_NUMBER)+1;
+        count++;
     }
 }
 
@@ -274,12 +275,13 @@ int main() {
 
     printf("Enter The Matrix Size : ");
     scanf("%d", &N);
-    mat = (int*) malloc(N*N*sizeof(int));
+    mat = (int*) calloc(N*N, sizeof(int));  // allocate memory and initialize to zero
     rowPointers = (int*) malloc((N+1)*sizeof(int));
     columnPointers = (int*) malloc((N+1)* sizeof(int));
+    NoOfNonZeroElements = N*N*0.1;
 
     printf("\n*************************  Original Sparse Matrix  **************************\n");
-    generateRandomSparseMat(mat, &NoOfNonZeroElements, N);
+    generateRandomSparseMat(mat, N);
     values = (int*) malloc(NoOfNonZeroElements*sizeof(int));
     columnIndexes = (int*) malloc(NoOfNonZeroElements*sizeof(int));
     print2DArray(mat, N);
@@ -324,12 +326,12 @@ int main() {
     printf("\n\n*****************************************************************************\n");
 
     /*releasing allocated memory blocks*/
-    free(mat);
+    /*free(mat);
     free(columnIndexes);
     free(rowPointers);
     free(rowIndexes);
     free(columnPointers);
-    free(values);
+    free(values);*/
 
     return 0;
 }
