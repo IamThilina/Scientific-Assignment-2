@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 
 #define MAXIMUM_NUMBER 10
 #define MAX_LINKS_FROM_PAGES 5
@@ -58,9 +59,9 @@ void initializePageRankVector(double *vect, int size){
 int main() {
 
     const int N = 10;
-    int i,j,iteration=0;
+    int i,j,converged=0, iteration=0;
     double *probabilityTransitionMat;
-    double temp, absoluteError,relativeError = 1;
+    double temp, delta = 0.001;
     double *pageRankVector, *pageRankVectorCopy;
 
     //printf("\n**********************************  Matrix  *********************************\n\n");
@@ -71,12 +72,7 @@ int main() {
     initializeProbabilityTransitionMatrix(probabilityTransitionMat, N);
     initializePageRankVector(pageRankVectorCopy, N);
 
-    //print2DArray(probabilityTransitionMat, N);
-    //printf("\n\n");
-    //print1DArray(pageRankVectorCopy, N);
-
-
-    while (iteration < 2){
+    while (!converged){
         iteration++;
         printf("\n*****************************  Iteration No : %d  ***************************\n",iteration);
         for (i = 0; i < N; ++i) {
@@ -86,9 +82,21 @@ int main() {
             }
             *(pageRankVector+i) = temp;
         }
-        memcpy(pageRankVectorCopy,pageRankVector, N);
         printf("\nPage Ranks\n");
         print1DArray(pageRankVector, N);
+
+        // checking if converged
+        for (int k = 0; k < N; ++k) {
+            if(fabs(*(pageRankVector+k) - *(pageRankVectorCopy + k)) < delta) {
+                if (k == N-1)
+                    converged = 1;
+                else
+                    continue;
+            }
+            else
+                break;
+        }
+        memcpy(pageRankVectorCopy,pageRankVector, N);
         printf("\n\n*****************************************************************************\n");
     }
 

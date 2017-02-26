@@ -67,35 +67,34 @@ void convertToCRS(int *mat, int *values, int *columnIndexes, int *rowPointers, i
 
 int getMatElementAt(int row, int column, int *values, int * columnIndexes, int *rowPointers){
 
-    int rowPointer = *(rowPointers+(row-1));
+    int rowBeginIndex = *(rowPointers+(row-1));
 
-    if(rowPointer == -1) // complete zero row
+    if(rowBeginIndex == -1) // complete zero row
         return 0;
 
-    int offset = (rowPointer-1);
-    columnIndexes += offset;
-    int columnIndex = *columnIndexes;
+    int offset = (rowBeginIndex-1);
+    //columnIndexes += offset;
+    int scanningColumn = *(columnIndexes + offset);
 
     int nextRowBeginIndex = *(rowPointers+row);
     int k=1;
     while(nextRowBeginIndex<0){ // find the pointer to next non complete zero row
-        nextRowBeginIndex = *(rowPointers + row + k);
+        nextRowBeginIndex = *(rowPointers + row + k++);
     }
     int offsetToNextRow = nextRowBeginIndex - 1;
 
-    if(columnIndex > column){
+    if(scanningColumn > column){
         return 0;
-    } else if (columnIndex < column){
-        while (columnIndex < column){
-            columnIndex = *++columnIndexes;
+    } else if (scanningColumn < column){
+        while (scanningColumn < column){
             offset++;
-            if(offset < offsetToNextRow || columnIndex > column) { // beginning of next row
+            scanningColumn = *(columnIndexes + offset);
+            if(offset == offsetToNextRow || scanningColumn > column) { // beginning of next row or scanning column exceeds searching column
                 return 0;
             }
         }
         return  *(values+offset);
     } else{
-        //printf("\nOn The Dot");
         return *(values+offset);
     }
 }
@@ -300,15 +299,22 @@ int main() {
     printf("\n************************* Converting To CRS Format  *************************\n");
     convertToCRS(mat, values, columnIndexes, rowPointers, N);
 
-    printf("\nValues Array\n");
+    /*printf("\nValues Array\n");
     print1DArray(values, NoOfNonZeroElements);
     printf("\n\nColumn Indexes Array\n");
     print1DArray(columnIndexes, NoOfNonZeroElements);
     printf("\n\nRow Pointers\n");
     print1DArray(rowPointers, N+1);
-    printf("\n\n*****************************************************************************\n");
+    printf("\n\n*****************************************************************************\n");*/
 
-    printf("\n******************** Setting Diagonal Elements to 2016  *********************\n");
+    for (int k = 0; k < N; ++k) {
+        for (int l = 0; l < N; ++l) {
+            printf("%2d ",getMatElementAt(k+1, l+1, values, columnIndexes, rowPointers));
+        }
+        printf("\n");
+    }
+
+    /*printf("\n******************** Setting Diagonal Elements to 2016  *********************\n");
     columnIndexes = realloc(columnIndexes, NoOfNonZeroElements+N);
     values = realloc(values, NoOfNonZeroElements+N);
     rowIndexes = (int*) malloc((NoOfNonZeroElements+N)*sizeof(int));
@@ -333,7 +339,7 @@ int main() {
     print1DArray(rowIndexes, NoOfNonZeroElements);
     printf("\n\nColumn Pointers\n");
     print1DArray(columnPointers, N+1);
-    printf("\n\n*****************************************************************************\n");
+    printf("\n\n*****************************************************************************\n");*/
 
     /*releasing allocated memory blocks*/
     /*free(mat);
