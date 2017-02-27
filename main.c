@@ -34,7 +34,7 @@ void generateRandomSparseMat(int *mat, int size){
     while(count < nnz){
         randomRow = ((int)rand()%size);
         randomColumn = ((int)rand()%size);
-        printf("(%d,%d)\n",randomRow,randomColumn);
+        //printf("(%d,%d)\n",randomRow,randomColumn);
         if(*((mat+randomRow*size)+randomColumn) == 0) { // if non-zero element was added earlier, skip this
             *((mat + randomRow * size) + randomColumn) = ((int) rand() % MAXIMUM_NUMBER) + 1;
             count++;
@@ -111,10 +111,11 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
 
         int increment = row;
         while(rowPointer == -1){
-            rowPointer = *(rowPointers+ increment++);
+            rowPointer = *(rowPointers+ increment);
+            increment++;
         }
 
-        offset = (rowPointer-1); // 1 to counter the way arrays are indexed, 1 to go back to previous row
+        offset = (rowPointer-1);
 
         //updating values and columnIndexes
         for (int i = *NoOfNonZeroElements; i > offset; i--) {
@@ -129,9 +130,10 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
         for (int j = row-1; j <= size; ++j) {
             if(*(rowPointers+j) != -1){
                 *(rowPointers+j) += 1;
-            } else{
+            } else if(j == row-1){
                 *(rowPointers+j) = offset+1;
-            }
+            } else
+                continue;
         }
 
     } else{  // adding to non-complete zero row
@@ -165,10 +167,11 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
             }
         } else if (columnIndex < column){
             while (columnIndex < column){
-                columnIndex = *(columnIndexes+ ++offset);
+                offset++;
+                columnIndex = *(columnIndexes+ offset);
                 if(offset == offsetToNextRow || columnIndex > column) {
                     // First condition : Offset is at next row.Element must be the last non zero element of the row. overriding a zero
-                    // Last conditions : there are more elements in the required row. overriding a zero
+                    // Second condition : there are more elements in the required row. overriding a zero
                     for (int i = *NoOfNonZeroElements; i > offset; i--) {
                         *(columnIndexes+i) = *(columnIndexes +i-1);
                         *(values+i) = *(values+i-1);
@@ -192,7 +195,7 @@ void setMatElementAt(int row, int column, int *values, int * columnIndexes, int 
                     continue;
                 }
             }
-        } else{
+        } else{ //overriding an existing element
             *(values+offset) = newValue;
         }
     }
@@ -288,8 +291,9 @@ int main() {
 
     printf("\n*************************  Original Sparse Matrix  **************************\n");
     generateRandomSparseMat(mat, N);
-    values = (int*) malloc(NoOfNonZeroElements*sizeof(int));
-    columnIndexes = (int*) malloc(NoOfNonZeroElements*sizeof(int));
+    values = (int*) malloc((NoOfNonZeroElements+N)*sizeof(int));
+    columnIndexes = (int*) malloc((NoOfNonZeroElements+N)*sizeof(int));
+    rowIndexes = (int*) malloc((NoOfNonZeroElements+N)*sizeof(int));
     print2DArray(mat, N);
     printf("\n*****************************************************************************\n");
 
@@ -305,9 +309,6 @@ int main() {
     printf("\n\n*****************************************************************************\n");
 
     printf("\n******************** Setting Diagonal Elements to 2016  *********************\n");
-    columnIndexes = realloc(columnIndexes, NoOfNonZeroElements+N);
-    values = realloc(values, NoOfNonZeroElements+N);
-    rowIndexes = (int*) malloc((NoOfNonZeroElements+N)*sizeof(int));
     for (i = 1; i <= N; i++) {
         setMatElementAt(i, i, values, columnIndexes, rowPointers, 2016, &NoOfNonZeroElements, N);
     }
