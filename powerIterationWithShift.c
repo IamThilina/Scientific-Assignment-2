@@ -40,12 +40,13 @@ int main() {
     double temp, absoluteError,relativeError = 1;
     double eignVector[3] = {0.0, 0.0, 1.0};
     double eignVectorCopy[3] = {0.0, 0.0, 1.0};
+    double ERROR_SENSITIVITY = 0.0000000001;
 
     printf("\n**********************************  Matrix  *********************************\n");
     print2DArray(&mat, N);
     printf("\n*****************************************************************************\n");
 
-    while (relativeError > 0.000001){
+    while (relativeError > ERROR_SENSITIVITY){
         computedEignValue = 0;
         iteration++;
 
