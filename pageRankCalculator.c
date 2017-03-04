@@ -4,10 +4,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 #include <math.h>
-#include <float.h>
 
 #define MAXIMUM_NUMBER 10
 #define MAX_LINKS_FROM_PAGES 5
@@ -70,11 +68,10 @@ int main() {
     double computedEignValue = 0.0;
     int i,j, iteration = 0;
     double *probabilityTransitionMat;
-    long double temp,aggregatedRelativeChange = 1;
+    double temp,aggregatedRelativeChange = 1;
     double *pageRankVector, *pageRankVectorCopy;
-    long double ERROR_SENSITIVITY = 0.0000000001;
+    double ERROR_SENSITIVITY = 0.0000000001;
 
-    //printf("\n**********************************  Matrix  *********************************\n\n");
     probabilityTransitionMat = (double*) calloc(N*N, sizeof(double)); // allocate memory and initialize to zero
     pageRankVector = (double*) malloc(N*sizeof(double));
     pageRankVectorCopy = (double*) malloc(N*sizeof(double));
