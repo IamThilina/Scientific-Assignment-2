@@ -7,6 +7,7 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
+#include <float.h>
 
 #define MAXIMUM_NUMBER 10
 #define MAX_LINKS_FROM_PAGES 5
@@ -25,6 +26,13 @@ void print1DArray(double *array, int size){
 
     for (int j = 0; j < size; ++j) {
         printf(" %f", *array++);
+    }
+}
+
+void printPageRanks(double *array, int size){
+
+    for (int j = 0; j < size; ++j) {
+        printf(" page-%d => %f\n", j+1,*array++);
     }
 }
 
@@ -58,11 +66,13 @@ void initializePageRankVector(double *vect, int size){
 
 int main() {
 
-    const int N = 10;
-    int i,j,converged=0, iteration=0;
+    const int N = 1000;
+    double computedEignValue = 0.0;
+    int i,j, iteration = 0;
     double *probabilityTransitionMat;
-    double temp, delta = 0.001;
+    long double temp,aggregatedRelativeChange = 1;
     double *pageRankVector, *pageRankVectorCopy;
+    long double ERROR_SENSITIVITY = 0.0000000001;
 
     //printf("\n**********************************  Matrix  *********************************\n\n");
     probabilityTransitionMat = (double*) calloc(N*N, sizeof(double)); // allocate memory and initialize to zero
@@ -72,7 +82,12 @@ int main() {
     initializeProbabilityTransitionMatrix(probabilityTransitionMat, N);
     initializePageRankVector(pageRankVectorCopy, N);
 
-    while (!converged){
+    printf("\n\n***********************  Probability Transition Matrix  *********************\n\n");
+    print2DArray(probabilityTransitionMat, N);
+    printf("\n\n*****************************************************************************\n");
+
+    while (aggregatedRelativeChange > ERROR_SENSITIVITY){
+        computedEignValue = 0;
         iteration++;
         printf("\n*****************************  Iteration No : %d  ***************************\n",iteration);
         for (i = 0; i < N; ++i) {
@@ -81,24 +96,28 @@ int main() {
                 temp += *(pageRankVectorCopy+j) * *((probabilityTransitionMat+j*N)+i);
             }
             *(pageRankVector+i) = temp;
+            // taking infinite norm
+            if(fabs(temp)>computedEignValue)
+                computedEignValue = fabs(temp);
         }
+
+        aggregatedRelativeChange = 0.0;
+        for (i = 0; i < N; ++i) {
+            *(pageRankVector+i) = *(pageRankVector+i)/computedEignValue;  // normalizing the vector
+            aggregatedRelativeChange += fabs(*(pageRankVector+i) - *(pageRankVectorCopy+i)); // calculate the relative change between last two iterations
+            *(pageRankVectorCopy+i) = *(pageRankVector+i);
+        }
+
         printf("\nPage Ranks\n");
         print1DArray(pageRankVector, N);
-
-        // checking if converged
-        for (int k = 0; k < N; ++k) {
-            if(fabs(*(pageRankVector+k) - *(pageRankVectorCopy + k)) < delta) {
-                if (k == N-1)
-                    converged = 1;
-                else
-                    continue;
-            }
-            else
-                break;
-        }
-        memcpy(pageRankVectorCopy,pageRankVector, N);
-        printf("\n\n*****************************************************************************\n");
+        printf("\n\nAggregated Relative Cahnge\n");
+        printf("%f",aggregatedRelativeChange);
+        printf("\n*****************************************************************************\n");
     }
+
+    printf("\n\n*****************************  Final Page Ranks  ****************************\n\n");
+    printPageRanks(pageRankVector, N);
+    printf("\n\n*****************************************************************************\n");
 
     /*releasing allocated memory blocks*/
     free(probabilityTransitionMat);
