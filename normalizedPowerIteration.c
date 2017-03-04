@@ -20,7 +20,7 @@ void print2DArray(double *array, int size){
 void print1DArray(double *array, int size){
 
     for (int j = 0; j < size; ++j) {
-        printf(" %f", *array++);
+        printf(" %.10f", *array++);
     }
 }
 

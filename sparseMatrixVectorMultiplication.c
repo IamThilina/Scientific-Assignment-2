@@ -243,16 +243,6 @@ int main() {
         printf("\n****************************  End Of Test Case %d ****************************",i+1);
         printf("\n*****************************************************************************\n");
 
-        /* Deallocate allocated memory */
-        free(matA);
-        free(matAValues);
-        free(matAColumnIndexes);
-        free(matARowPointers);
-        free(matB);
-        free(matBValues);
-        free(matBColumnIndexes);
-        free(matBRowPointers);
-        free(vector);
     }
 
     printf("Time For Dense Algo : %f\n",totalTimeForDenseAlgo/NUM_OF_TEST_CASES);
