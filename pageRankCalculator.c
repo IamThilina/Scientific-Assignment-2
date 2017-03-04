@@ -108,7 +108,7 @@ int main() {
         printf("\nPage Ranks\n");
         print1DArray(pageRankVector, N);
         printf("\n\nAggregated Relative Cahnge\n");
-        printf("%f",aggregatedRelativeChange);
+        printf("%.10f",aggregatedRelativeChange);
         printf("\n*****************************************************************************\n");
     }
 

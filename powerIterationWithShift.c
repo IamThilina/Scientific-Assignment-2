@@ -73,11 +73,11 @@ int main() {
         printf("\nComputed Eign Vector\n");
         print1DArray(&eignVector,N);
         printf("\n\nComputed Eign Value\n");
-        printf("%f",computedEignValue+shift);
+        printf("%.10f",computedEignValue+shift);
         printf("\n\nAbsolute Error\n");
-        printf("%f",absoluteError);
+        printf("%.10f",absoluteError);
         printf("\n\nRelative Error\n");
-        printf("%f",relativeError);
+        printf("%.10f",relativeError);
         printf("\n*****************************************************************************\n");
     }
 
